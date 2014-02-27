@@ -24,10 +24,13 @@ import ninja.session.Session;
 import com.google.inject.Inject;
 
 public class ApplicationController {
-
+  
+  // Context is always per request. Per request should always be inside the request method.
+  // If you'd use Context here it would assume that context is the same for the whole application
   @Inject
   Context injectedContext;
 
+  // Yes! That's correct... Context is now specific to the http request coming in to this method.
   public Result index(Context context) {
     String foo = "";
 
@@ -38,7 +41,11 @@ public class ApplicationController {
     return Results.html().render("foo", foo);
   }
 
+  // Also use the context inside the method... then it'll work..
+  // Something like  public Result storeDi(Context context, Session session) {...}
+  // (Yes - you can also use the session inside the method spec...)
   public Result storeDi() {
+    // won't work as injectedContext is not specific to this request...
     Session session = injectedContext.getSession();
     session.put("foo", "bar");
 
@@ -50,6 +57,7 @@ public class ApplicationController {
     return result;
   }
 
+  // That again should work perfectly fine...
   public Result storeNonDi(Session session) {
     session.put("foo", "bar");
 
@@ -57,6 +65,7 @@ public class ApplicationController {
     return result;
   }
 
+  // All good.
   public Result clearSession(Session session) {
     session.clear();
 
